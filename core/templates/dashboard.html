@@ -1,0 +1,89 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Autra</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md px-6 py-4 flex justify-between items-center">
+        <div class="text-xl font-bold text-indigo-600">Autra</div>
+        <div>
+            <a href="{% url 'dashboard' %}" class="text-indigo-600 hover:underline mx-2">Dashboard</a>
+            <a href="{% url 'account_logout' %}" class="text-red-600 hover:underline mx-2">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="text-center py-16 bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 text-white">
+        <h1 class="text-4xl font-bold mb-4">Welcome Back, {{ user.email }}</h1>
+        <p class="text-lg max-w-xl mx-auto">Manage your trades, track profits, and make smarter decisions with real-time data.</p>
+    </header>
+
+    <!-- Stats Section -->
+    <section class="py-12 px-6 md:px-20 bg-white">
+        <h2 class="text-2xl font-semibold text-center mb-10">Your Portfolio Overview</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-6 shadow-lg rounded-lg border border-gray-200">
+                <h3 class="font-semibold text-lg text-indigo-600 mb-2">Total Trades</h3>
+                <p class="text-3xl font-bold">{{ total_trades }}</p>
+            </div>
+            <div class="bg-white p-6 shadow-lg rounded-lg border border-gray-200">
+                <h3 class="font-semibold text-lg text-green-600 mb-2">Total Profit</h3>
+                <p class="text-3xl font-bold text-green-600">₹{{ total_profit }}</p>
+            </div>
+            <div class="bg-white p-6 shadow-lg rounded-lg border border-gray-200">
+                <h3 class="font-semibold text-lg text-blue-600 mb-2">Total Investment</h3>
+                <p class="text-3xl font-bold">₹{{ total_investment }}</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trade History Table -->
+    <section class="py-12 px-6 md:px-20 bg-gray-50">
+        <h2 class="text-2xl font-semibold text-center mb-10">Your Recent Trades</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white shadow-md rounded-lg border border-gray-200">
+                <thead>
+                    <tr class="bg-indigo-600 text-white">
+                        <th class="py-3 px-6 text-left">Trade ID</th>
+                        <th class="py-3 px-6 text-left">Stock Symbol</th>
+                        <th class="py-3 px-6 text-left">Quantity</th>
+                        <th class="py-3 px-6 text-left">Price</th>
+                        <th class="py-3 px-6 text-left">Timestamp</th>
+                        <th class="py-3 px-6 text-left">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trade in trades %}
+                        <tr class="border-b hover:bg-gray-100">
+                            <td class="py-3 px-6">{{ trade.id }}</td>
+                            <td class="py-3 px-6">{{ trade.stock_symbol }}</td>
+                            <td class="py-3 px-6">{{ trade.quantity }}</td>
+                            <td class="py-3 px-6">₹{{ trade.price }}</td>
+                            <td class="py-3 px-6">{{ trade.timestamp }}</td>
+                            <td class="py-3 px-6">
+                                <span class="px-2 py-1 text-sm {% if trade.status == 'Completed' %}bg-green-100 text-green-600{% else %}bg-yellow-100 text-yellow-600{% endif %} rounded-full">{{ trade.status }}</span>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="py-3 px-6 text-center text-gray-600">No trades yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-200 text-center py-6 text-sm text-gray-600 mt-12">
+        © {{ now|date:"Y" }} Autra. All rights reserved.
+    </footer>
+
+</body>
+</html>

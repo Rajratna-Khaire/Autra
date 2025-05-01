@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Autra - Trading Dashboard</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-dark: #1e293b;
+      --card-hover: #334155;
+      --text-dark: #f8fafc;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --green: #22c55e;
+      --green-hover: #16a34a;
+      --red: #ef4444;
+      --red-hover: #dc2626;
+      --yellow: #eab308;
+      --yellow-hover: #ca8a04;
+      --border: #334155;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Notification Bar */
+    .notification-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background-color: var(--card-dark);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 30;
+      overflow: hidden;
+    }
+
+    .notification-ticker {
+      display: flex;
+      animation: scroll 30s linear infinite;
+      white-space: nowrap;
+    }
+
+    .notification-item {
+      margin-right: 40px;
+      display: flex;
+      align-items: center;
+    }
+
+    .notification-item .symbol {
+      font-weight: 600;
+      margin-right: 8px;
+    }
+
+    .notification-item .price-change {
+      font-size: 0.9rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    @keyframes scroll {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* Top Button Space */
+    .button-space {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background-color: var(--card-dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      gap: 10px;
+      z-index: 10;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .platform-logo {
+      display: flex;
+      align-items: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      background-color: var(--primary);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .home-btn {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .home-btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .dashboard-btn {
+      background-color: #4b5563;
+      color: white;
+    }
+
+    .dashboard-btn:hover {
+      background-color: #374151;
+    }
+
+    /* Trading Dashboard Modal */
+    .dashboard-modal {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      width: 360px; /* Increased from 340px */
+      background-color: var(--card-dark);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      z-index: 20;
+      display: none;
+      border: 1px solid var(--border);
+    }
+
+    .dashboard-modal h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dashboard-modal h3 .close-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    .trading-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .control-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .trade-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      height: 100%;
+      box-sizing: border-box;
+      min-height: 44px;
+    }
+
+    .buy-btn {
+      background-color: var(--green);
+    }
+
+    .buy-btn:hover {
+      background-color: var(--green-hover);
+    }
+
+    .sell-btn {
+      background-color: var(--red);
+    }
+
+    .sell-btn:hover {
+      background-color: var(--red-hover);
+    }
+
+    .autotrade-btn {
+      background-color: var(--primary);
+    }
+
+    .autotrade-btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .input-group label {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .input-group input, .input-group select {
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background-color: #111827;
+      color: white;
+      font-size: 0.85rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .input-group input[readonly] {
+      background-color: #1e293b;
+      cursor: not-allowed;
+      color: #94a3b8;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .input-row .input-group {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Stock Selector Styles */
+    .stock-selector {
+      width: 100%;
+    }
+
+    .stock-selector select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background-color: #111827;
+      color: white;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 14px;
+      font-size: 0.9rem;
+    }
+
+    /* Left Watchlist Panel */
+    .left-panel {
+      width: 280px;
+      padding: 20px;
+      background-color: var(--card-dark);
+      border-right: 1px solid var(--border);
+      height: 100%;
+      box-sizing: border-box;
+      overflow-y: auto;
+      margin-top: 50px;
+      padding-bottom: 40px;
+    }
+
+    .watchlist-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .watchlist h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .watchlist-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .control-btn {
+      background: none;
+      border: none;
+      color: var(--text-dark);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+
+    .control-btn:hover {
+      background-color: var(--card-hover);
+    }
+
+    .watchlist-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .watchlist-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background-color: var(--card-dark);
+      border-radius: 8px;
+      transition: all 0.2s;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+
+    .watchlist-item:hover {
+      background-color: var(--card-hover);
+      transform: translateY(-1px);
+    }
+
+    .symbol-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .symbol-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .symbol-sector {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .price-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .current-price {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .price-change {
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .positive {
+      background-color: rgba(34, 197, 94, 0.15);
+      color: var(--green);
+    }
+
+    .negative {
+      background-color: rgba(239, 68, 68, 0.15);
+      color: var(--red);
+    }
+
+    /* TradingView Widget Container */
+    .tv-widget-container {
+      flex: 1;
+      height: calc(100% - 50px);
+      margin-top: 50px;
+      background-color: var(--card-dark);
+      padding-bottom: 40px;
+    }
+
+    /* Review Order Button */
+    .revieworder-btn {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px 16px;
+      font-size: 0.875rem;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+      color: white;
+      height: 36px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+      .left-panel {
+        width: 100%;
+        height: auto;
+        max-height: 40vh;
+      }
+      .tv-widget-container {
+        height: calc(60vh - 50px);
+      }
+      .dashboard-modal {
+        width: calc(100% - 40px);
+        right: 10px;
+        left: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation -->
+  <div class="button-space">
+    <div class="platform-logo">
+      <div class="logo-icon">A</div>
+      <span>Autra</span>
+    </div>
+    <div class="nav-buttons">
+      <a href="{% url 'home' %}">
+        <button class="nav-btn home-btn" id="homeBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Home
+        </button>
+      </a>
+      <!-- Portfolio Button -->
+<button class="portfolio-btn" style="background: linear-gradient(135deg, #34D399 0%, #10B981 100%); color: white; border-radius: 8px; padding: 10px 18px; display: flex; align-items: center; gap: 8px; border: none; cursor: pointer; font-weight: 500; transition: all 0.3s ease;" onclick="showPortfolio()">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 7H21M3 12H21M3 17H21" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  Portfolio
+</button>
+
+<!-- Portfolio Modal -->
+<div id="portfolioModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center; z-index: 1000;">
+  <div style="background: #FDE68A; padding: 24px 32px; border-radius: 12px; text-align: center; max-width: 400px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);">
+      <h2 style="color: #9D174D; margin-bottom: 12px;">📊 Portfolio</h2>
+      
+      <!-- Available Margin Section -->
+      <div id="availableMarginSection" style="background: #10B981; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="margin-bottom: 5px;">Available Margin</h3>
+          <p id="availableMargin" style="font-size: 18px; font-weight: bold;">₹5,00,000.00</p> <!-- This value will be updated dynamically -->
+      </div>
+      
+      <p style="color: #4B5563;">Executed Trades & Current Trades:</p>
+      <div style="color: #6B7280; text-align: left; margin: 20px 0;">
+          <h3 style="color: #22C55E;">Executed Trades</h3>
+          <ul style="list-style: none; padding: 0;" id="executedTrades">
+              <li>Reliance (RELIANCE) - Executed at ₹2,000 - Profit: ₹150</li>
+              <li>TCS (TCS) - Executed at ₹3,200 - Loss: ₹-100</li>
+          </ul>
+          <h3 style="color: #F59E0B;">Current Trades</h3>
+          <ul style="list-style: none; padding: 0;" id="currentTrades">
+              <li>No live trade</li>
+          </ul>
+      </div>
+
+      <button onclick="closePortfolio()" style="margin-top: 16px; padding: 8px 16px; background: #22C55E; color: white; border: none; border-radius: 8px; cursor: pointer;">OK</button>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+  // Initial available margin
+  let availableMargin = 500000.00;
+
+  // Function to show the portfolio modal
+  function showPortfolio() {
+      // Show the portfolio modal
+      const portfolioModal = document.getElementById('portfolioModal');
+      portfolioModal.style.display = 'flex';
+  }
+
+  // Function to close the portfolio modal
+  function closePortfolio() {
+      // Close the portfolio modal
+      const portfolioModal = document.getElementById('portfolioModal');
+      portfolioModal.style.display = 'none';
+  }
+
+  // Function to update the available margin display
+  function updateAvailableMargin() {
+      // Update the available margin in the modal
+      const availableMarginElement = document.getElementById('availableMargin');
+      availableMarginElement.textContent = `₹${availableMargin.toFixed(2)}`;
+  }
+</script>
+
+    
+      <button class="nav-btn dashboard-btn" id="dashboardBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 3H10V10H3V3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 3H21V10H14V3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 14H10V21H3V14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 14H21V21H14V14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Trading Dashboard
+      </button>
+      <!-- Notifications Button -->
+<button class="alert-btn" style="
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  color: white;
+  border-radius: 8px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  font-size: 14px;
+" onclick="showNotifications()">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 8V12M12 16H12.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  Notifications
+</button>
+
+<!-- Notification Modal -->
+<div id="notificationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.3); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+  <div style="background: #ffffff; padding: 20px 30px; border-radius: 15px; text-align: center; max-width: 400px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <h2 style="color: #3B82F6; margin-bottom: 20px; font-size: 22px; font-weight: 600; letter-spacing: 0.5px;">🔔 Notifications</h2>
+    <p style="color: #4B5563; font-size: 16px; font-weight: 500; margin-bottom: 20px;">Here are your latest stock price alerts:</p>
+    <ul style="color: #1F2937; list-style: none; padding-left: 0; margin: 0; font-size: 16px; font-weight: 500; line-height: 1.8; text-align: left;">
+      <li><strong>Reliance (RELIANCE):</strong> Price Alert: ₹2500</li>
+      <li><strong>TCS (TCS):</strong> Price Alert: ₹3300</li>
+      <li><strong>Infosys (INFY):</strong> Price Alert: ₹1800</li>
+      <li><strong>HDFC Bank (HDFCBANK):</strong> Price Alert: ₹1600</li>
+      <li><strong>SBI (SBIN):</strong> Price Alert: ₹600</li>
+    </ul>
+    <button onclick="closeNotification()" style="margin-top: 25px; padding: 12px 22px; background: #3B82F6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.3s ease; width: 100%; max-width: 200px;">
+      Close Notifications
+    </button>
+  </div>
+</div>
+
+<script>
+  // Show Notification Modal
+  function showNotifications() {
+    document.getElementById('notificationModal').style.display = 'flex';
+  }
+
+  // Close Notification Modal
+  function closeNotification() {
+    document.getElementById('notificationModal').style.display = 'none';
+  }
+</script>
+
+
+<style>
+.alert-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+}
+
+.alert-btn:active {
+  transform: translateY(0);
+}
+</style>
+      <button class="aipredictions-btn" style="
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  color: white;
+  border-radius: 8px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19 4L12 12L5 4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    <path d="M19 8L12 16L5 8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="20" r="2" fill="white"/>
+  </svg>
+  AI Predictions
+</button>
+    </div>
+  </div>    
+  
+
+  <!-- Trading Dashboard Modal -->
+  <div class="dashboard-modal" id="dashboardModal">
+    <h3>Trading Controls
+      <button class="close-btn" id="closeModalBtn">×</button>
+    </h3>
+    <div class="trading-controls">
+      <!-- Stock Selector Dropdown -->
+      <div class="input-group stock-selector">
+        <label>Select Stock</label>
+        <select id="stockSelect">
+          <option value="RELIANCE">RELIANCE (Energy)</option>
+          <option value="TCS">TCS (IT Services)</option>
+          <option value="INFY">INFY (IT Services)</option>
+          <option value="HDFCBANK">HDFC BANK (Banking)</option>
+          <option value="SBIN">SBIN (Banking)</option>
+        </select>
+      </div>
+      
+      <!-- Trading Action Buttons -->
+      <!-- Buy and Sell Buttons -->
+<div class="control-row" style="display: flex; gap: 10px; margin-bottom: 15px;">
+  <button class="trade-btn buy-btn" onclick="placeOrderFromButton('Buy')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Buy
+  </button>
+
+  <button class="trade-btn sell-btn" onclick="placeOrderFromButton('Sell')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Sell
+  </button>
+</div>
+
+<!-- Success Message Modal -->
+<div id="successMessage" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); align-items: center; justify-content: center; z-index: 9999;">
+  <div style="background: #10B981; padding: 25px 30px; border-radius: 12px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0px 0px 10px #000;">
+    <h2 style="color: #ffffff; margin-bottom: 15px;">✅ Trade Placed Successfully!</h2>
+    <div style="color: #D1FAE5; margin-bottom: 20px; font-size: 14px; text-align: left;">
+      <p><strong>Order Type:</strong> <span id="orderTypeDetailMessage"></span></p>
+      <p><strong>Quantity:</strong> <span id="quantityDetailMessage"></span></p>
+      <p><strong>Price:</strong> ₹<span id="priceDetailMessage"></span></p>
+      <p><strong>Target:</strong> ₹<span id="targetPriceDetailMessage"></span></p>
+      <p><strong>Stop Loss:</strong> ₹<span id="slPriceDetailMessage"></span></p>
+      <p><strong>Required Margin:</strong> ₹<span id="requiredMarginDetailMessage"></span></p>
+    </div>
+    <button onclick="closeSuccessMessage()" style="background: #EF4444; color: white; padding: 8px 20px; border: none; border-radius: 8px; cursor: pointer;">Close</button>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+  function placeOrderFromButton(orderTypeFromButton) {
+    const quantity = document.getElementById('quantity').value;
+    const price = document.getElementById('price').value;
+    const targetPrice = document.getElementById('targetPrice').value;
+    const slPrice = document.getElementById('slPrice').value;
+    const requiredMargin = document.getElementById('requiredMargin').value;
+
+    if (orderTypeFromButton && quantity && price && targetPrice && slPrice && requiredMargin) {
+      document.getElementById('orderTypeDetailMessage').textContent = orderTypeFromButton;
+      document.getElementById('quantityDetailMessage').textContent = quantity;
+      document.getElementById('priceDetailMessage').textContent = price;
+      document.getElementById('targetPriceDetailMessage').textContent = targetPrice;
+      document.getElementById('slPriceDetailMessage').textContent = slPrice;
+      document.getElementById('requiredMarginDetailMessage').textContent = requiredMargin;
+
+      document.getElementById('successMessage').style.display = 'flex';
+    } else {
+      alert('⚠️ Please fill all fields before placing the order.');
+    }
+  }
+
+  function closeSuccessMessage() {
+    document.getElementById('successMessage').style.display = 'none';
+  }
+</script>
+
+<!-- Add this to your CSS file if needed -->
+<style>
+  .trade-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    color: white;
+    transition: background 0.3s ease;
+  }
+  .buy-btn {
+    background-color: #22C55E;
+  }
+  .buy-btn:hover {
+    background-color: #16A34A;
+  }
+  .sell-btn {
+    background-color: #EF4444;
+  }
+  .sell-btn:hover {
+    background-color: #DC2626;
+  }
+</style>
+
+      
+      <div class="control-row">
+        <button class="trade-btn autotrade-btn" id="autoTradeBtn" onclick="handleAutoTrade()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 12V19H20V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 3L12 15M12 15L8 11M12 15L16 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Auto Trade
+        </button>
+      </div>
+      
+      <!-- Success Modal -->
+      <div id="successModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+        <div style="background: white; padding: 24px 32px; border-radius: 12px; text-align: center; max-width: 300px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
+          <h2 style="color: #22C55E; margin-bottom: 12px;">✅ Success!</h2>
+          <p style="color: #4B5563;">Auto Trade started successfully.</p>
+          <button onclick="closeModal()" style="margin-top: 16px; padding: 8px 16px; background: #22C55E; color: white; border: none; border-radius: 8px; cursor: pointer;">OK</button>
+        </div>
+      </div>
+      
+      <!-- Fancy Alert Modal -->
+      <div id="fancyAlert" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center; z-index: 1000;">
+        <div style="background: #FDE68A; padding: 24px 32px; border-radius: 12px; text-align: center; max-width: 300px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);">
+          <h2 style="color: #9D174D; margin-bottom: 12px;">⚠️ Oops!</h2>
+          <p style="color: #6B7280;">Please enter a valid quantity before starting Auto Trade.</p>
+          <button onclick="closeAlert()" style="margin-top: 16px; padding: 8px 16px; background: #EF4444; color: white; border: none; border-radius: 8px; cursor: pointer;">OK</button>
+        </div>
+      </div>
+      
+      <!-- JavaScript -->
+      <script>
+      function handleAutoTrade() {
+        const quantity = document.getElementById('quantity').value;
+      
+        if (!quantity || quantity <= 0) {
+          // Show the fancy alert if quantity is invalid
+          openAlert();
+          return;
+        }
+      
+        // If quantity is entered correctly, show success modal
+        openModal();
+      }
+      
+      function openModal() {
+        document.getElementById('successModal').style.display = 'flex';
+      }
+      
+      function closeModal() {
+        document.getElementById('successModal').style.display = 'none';
+      }
+      
+      function openAlert() {
+        document.getElementById('fancyAlert').style.display = 'flex';
+      }
+      
+      function closeAlert() {
+        document.getElementById('fancyAlert').style.display = 'none';
+      }
+      </script>
+      
+      
+      <!-- Trading Parameters -->
+      <div class="input-row">
+        <div class="input-group">
+          <label>Order Type</label>
+          <select id="orderType">
+            <option>Delivery</option>
+            <option>Intraday</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Quantity</label>
+          <input type="number" id="quantity" placeholder="Qty">
+        </div>
+      </div>
+      
+      <div class="input-row">
+        <div class="input-group">
+          <label>Price</label>
+          <input type="number" id="price" placeholder="Price">
+        </div>
+        <div class="input-group">
+          <label>Target</label>
+          <input type="number" id="targetPrice" placeholder="Target">
+        </div>
+      </div>
+      
+      <div class="input-row">
+        <div class="input-group">
+          <label>SL Limit</label>
+          <input type="number" id="slPrice" placeholder="Stop loss">
+        </div>
+        <div class="input-group">
+          <label>Required Margin</label>
+          <input type="text" id="requiredMargin" placeholder="Margin" readonly>
+        </div>
+      </div>
+      
+     <!-- Review Order Button -->
+<!-- Review Order Button -->
+<button class="revieworder-btn" onclick="openOrderModal()" style="background: #10B981; color: white; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer;">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+    <path d="M9 12L11 14L15 10M21 12C21 16.9706 21 12 21 12C16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  Review Order
+</button>
+
+<!-- New Modal for Order Details -->
+<div id="orderDetailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.3s;">
+  <div style="background: #FDE68A; padding: 24px 32px; border-radius: 12px; text-align: center; max-width: 400px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);">
+    <h2 style="color: #9D174D; margin-bottom: 12px;">📦 Order Details</h2>
+    
+    <!-- Order Details Section -->
+    <div style="text-align: left; color: #4B5563; margin-bottom: 20px;">
+      <h3 style="color: #22C55E;">Order Summary</h3>
+      <p><strong>Order Type:</strong> <span id="orderTypeDetail">Delivery</span></p>
+      <p><strong>Quantity:</strong> <span id="quantityDetail">0</span></p>
+      <p><strong>Price:</strong> ₹<span id="priceDetail">0.00</span></p>
+      <p><strong>Target:</strong> ₹<span id="targetPriceDetail">0.00</span></p>
+      <p><strong>Stop Loss (SL):</strong> ₹<span id="slPriceDetail">0.00</span></p>
+      <p><strong>Required Margin:</strong> ₹<span id="requiredMarginDetail">0.00</span></p>
+    </div>
+
+    <!-- Place Order Button in Modal -->
+    <button onclick="placeOrderAndShowMessage()" style="margin-top: 16px; padding: 8px 16px; background: #22C55E; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">
+      Place Buy Order
+    </button>
+
+    <!-- Close Button -->
+    <button onclick="closeOrderModal()" style="margin-top: 16px; padding: 8px 16px; background: #F59E0B; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">
+      Close
+    </button>
+  </div>
+</div>
+
+<!-- Success Message Modal -->
+<div id="successMessage" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center; z-index: 1001;">
+  <div style="background: #10B981; padding: 24px 32px; border-radius: 12px; text-align: center; max-width: 400px; width: 100%; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);">
+    <h2 style="color: white; margin-bottom: 12px;">✅ Trade Placed Successfully!</h2>
+    <p style="color: white; margin-bottom: 20px; font-size: 16px;">Your trade has been placed successfully!</p>
+
+    <!-- Order Details Summary in Success Message -->
+    <div style="text-align: left; color: white; font-size: 14px; margin-bottom: 20px;">
+      <p><strong>Order Type:</strong> <span id="orderTypeDetailMessage"></span></p>
+      <p><strong>Quantity:</strong> <span id="quantityDetailMessage"></span></p>
+      <p><strong>Price:</strong> ₹<span id="priceDetailMessage"></span></p>
+      <p><strong>Target:</strong> ₹<span id="targetPriceDetailMessage"></span></p>
+      <p><strong>Stop Loss (SL):</strong> ₹<span id="slPriceDetailMessage"></span></p>
+      <p><strong>Required Margin:</strong> ₹<span id="requiredMarginDetailMessage"></span></p>
+    </div>
+
+    <!-- Close Button -->
+    <button onclick="closeSuccessMessage()" style="padding: 8px 16px; background: #FF4D4D; color: white; border: none; border-radius: 8px; cursor: pointer;">
+      Close
+    </button>
+  </div>
+</div>
+
+<!-- JavaScript for Opening and Closing the Modal -->
+<script>
+  // Function to open the new order details modal
+  function openOrderModal() {
+    // Get values from the form inputs
+    const orderType = document.getElementById('orderType').value;
+    const quantity = document.getElementById('quantity').value;
+    const price = document.getElementById('price').value;
+    const targetPrice = document.getElementById('targetPrice').value;
+    const slPrice = document.getElementById('slPrice').value;
+    const requiredMargin = document.getElementById('requiredMargin').value;
+
+    // Populate the modal with the order details
+    document.getElementById('orderTypeDetail').textContent = orderType;
+    document.getElementById('quantityDetail').textContent = quantity;
+    document.getElementById('priceDetail').textContent = price;
+    document.getElementById('targetPriceDetail').textContent = targetPrice;
+    document.getElementById('slPriceDetail').textContent = slPrice;
+    document.getElementById('requiredMarginDetail').textContent = requiredMargin;
+
+    // Display the modal
+    const orderDetailsModal = document.getElementById('orderDetailsModal');
+    orderDetailsModal.style.display = 'flex';
+  }
+
+  // Function to close the new order details modal
+  function closeOrderModal() {
+    // Hide the modal
+    const orderDetailsModal = document.getElementById('orderDetailsModal');
+    orderDetailsModal.style.display = 'none';
+  }
+
+  // Function to validate if all fields are filled and place the order
+  function placeOrderAndShowMessage() {
+    // Get values from the form inputs
+    const orderType = document.getElementById('orderType').value;
+    const quantity = document.getElementById('quantity').value;
+    const price = document.getElementById('price').value;
+    const targetPrice = document.getElementById('targetPrice').value;
+    const slPrice = document.getElementById('slPrice').value;
+    const requiredMargin = document.getElementById('requiredMargin').value;
+
+    // Check if all fields are filled
+    if (orderType && quantity && price && targetPrice && slPrice && requiredMargin) {
+      // Populate the success message modal with the order details
+      document.getElementById('orderTypeDetailMessage').textContent = orderType;
+      document.getElementById('quantityDetailMessage').textContent = quantity;
+      document.getElementById('priceDetailMessage').textContent = price;
+      document.getElementById('targetPriceDetailMessage').textContent = targetPrice;
+      document.getElementById('slPriceDetailMessage').textContent = slPrice;
+      document.getElementById('requiredMarginDetailMessage').textContent = requiredMargin;
+
+      // Show the success message modal
+      const successMessageModal = document.getElementById('successMessage');
+      successMessageModal.style.display = 'flex';
+
+      // Close the order details modal
+      closeOrderModal();
+    } else {
+      // Show an alert if any field is missing
+      alert('Please fill in all the fields before placing the order.');
+    }
+  }
+
+  // Function to close the success message modal
+  function closeSuccessMessage() {
+    // Hide the success message modal
+    const successMessageModal = document.getElementById('successMessage');
+    successMessageModal.style.display = 'none';
+  }
+</script>
+
+
+
+
+
+
+    </div>
+  </div>
+
+  <!-- Left Watchlist Panel -->
+  <div class="left-panel">
+    <div class="watchlist">
+      <div class="watchlist-header">
+        <h3>Market Watchlist</h3>
+        <div class="watchlist-controls">
+          <button class="control-btn">+</button>
+          <button class="control-btn">⚙️</button>
+        </div>
+      </div>
+      
+      <div class="watchlist-items">
+        <div class="watchlist-item" onclick="loadChart('RELIANCE')">
+          <div class="symbol-info">
+            <span class="symbol-name">RELIANCE</span>
+            <span class="symbol-sector">Energy</span>
+          </div>
+          <div class="price-info">
+            <span class="current-price">₹2,510.75</span>
+            <span class="price-change positive">+1.25%</span>
+          </div>
+        </div>
+        
+        <div class="watchlist-item" onclick="loadChart('TCS')">
+          <div class="symbol-info">
+            <span class="symbol-name">TCS</span>
+            <span class="symbol-sector">IT Services</span>
+          </div>
+          <div class="price-info">
+            <span class="current-price">₹3,295.50</span>
+            <span class="price-change negative">-0.75%</span>
+          </div>
+        </div>
+        
+        <div class="watchlist-item" onclick="loadChart('INFY')">
+          <div class="symbol-info">
+            <span class="symbol-name">INFY</span>
+            <span class="symbol-sector">IT Services</span>
+          </div>
+          <div class="price-info">
+            <span class="current-price">₹1,452.30</span>
+            <span class="price-change positive">+2.10%</span>
+          </div>
+        </div>
+        
+        <div class="watchlist-item" onclick="loadChart('HDFCBANK')">
+          <div class="symbol-info">
+            <span class="symbol-name">HDFC BANK</span>
+            <span class="symbol-sector">Banking</span>
+          </div>
+          <div class="price-info">
+            <span class="current-price">₹1,680.25</span>
+            <span class="price-change negative">-1.15%</span>
+          </div>
+        </div>
+        
+        <div class="watchlist-item" onclick="loadChart('SBIN')">
+          <div class="symbol-info">
+            <span class="symbol-name">SBIN</span>
+            <span class="symbol-sector">Banking</span>
+          </div>
+          <div class="price-info">
+            <span class="current-price">₹625.80</span>
+            <span class="price-change positive">+0.90%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TradingView Widget Container -->
+  <div class="tv-widget-container" id="tvChart">
+    <!-- TradingView Chart will be loaded here -->
+  </div>
+
+  <!-- Notification Bar -->
+  <div class="notification-bar">
+    <div class="notification-ticker" id="notificationTicker">
+      <!-- Notifications will be added here dynamically -->
+    </div>
+  </div>
+
+  <!-- TradingView Widget Script -->
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <script>
+    // Stock data
+    const stocks = {
+      'RELIANCE': { price: 2510.75, sector: 'Energy' },
+      'TCS': { price: 3295.50, sector: 'IT Services' },
+      'INFY': { price: 1452.30, sector: 'IT Services' },
+      'HDFCBANK': { price: 1680.25, sector: 'Banking' },
+      'SBIN': { price: 625.80, sector: 'Banking' }
+    };
+
+    // Initialize default chart
+    let widget;
+    let currentSymbol = 'RELIANCE';
+    let currentPrice = stocks['RELIANCE'].price;
+    
+    function initChart(symbol) {
+      currentSymbol = symbol;
+      currentPrice = stocks[symbol].price;
+      
+      if (widget) {
+        widget.remove();
+      }
+      
+      widget = new TradingView.widget({
+        "autosize": true,
+        "symbol": `NSE:${symbol}`,
+        "interval": "D",
+        "timezone": "Asia/Kolkata",
+        "theme": "dark",
+        "style": "1",
+        "locale": "in",
+        "toolbar_bg": "#1e293b",
+        "enable_publishing": false,
+        "hide_top_toolbar": false,
+        "hide_side_toolbar": false,
+        "allow_symbol_change": true,
+        "container_id": "tvChart",
+        "studies": [
+          "RSI@tv-basicstudies",
+          "MACD@tv-basicstudies",
+          "Volume@tv-basicstudies"
+        ]
+      });
+      
+      // Update price input with current price
+      document.getElementById('price').value = currentPrice.toFixed(2);
+      // Update stock selector
+      document.getElementById('stockSelect').value = symbol;
+      // Calculate margin when stock changes
+      calculateMargin();
+    }
+    
+    // Load chart when clicking watchlist items
+    function loadChart(symbol) {
+      initChart(symbol);
+    }
+    
+    // Toggle dashboard modal
+    const dashboardBtn = document.getElementById('dashboardBtn');
+    const dashboardModal = document.getElementById('dashboardModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    
+    dashboardBtn.addEventListener('click', function() {
+      dashboardModal.style.display = dashboardModal.style.display === 'block' ? 'none' : 'block';
+    });
+    
+    closeModalBtn.addEventListener('click', function() {
+      dashboardModal.style.display = 'none';
+    });
+    
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!dashboardModal.contains(event.target) && event.target !== dashboardBtn && event.target !== closeModalBtn) {
+        dashboardModal.style.display = 'none';
+      }
+    });
+    
+    // Stock selector change handler
+    document.getElementById('stockSelect').addEventListener('change', function() {
+      const selectedSymbol = this.value;
+      initChart(selectedSymbol);
+    });
+    
+    // Auto Trade functionality
+    const autoTradeBtn = document.getElementById('autoTradeBtn');
+    const priceInput = document.getElementById('price');
+    const targetInput = document.getElementById('targetPrice');
+    const slInput = document.getElementById('slPrice');
+    const quantityInput = document.getElementById('quantity');
+    const marginInput = document.getElementById('requiredMargin');
+    
+    // Calculate required margin (quantity × price)
+    function calculateMargin() {
+      const quantity = parseFloat(quantityInput.value) || 0;
+      const price = parseFloat(priceInput.value) || 0;
+      const margin = quantity * price;
+      marginInput.value = margin ? `₹${margin.toFixed(2)}` : '';
+    }
+    
+    // Add event listeners for margin calculation
+    quantityInput.addEventListener('input', calculateMargin);
+    priceInput.addEventListener('input', calculateMargin);
+    
+    autoTradeBtn.addEventListener('click', function() {
+      // Calculate target (2% above current price)
+      const target = currentPrice * 1.02;
+      // Calculate stop loss (1.5% below current price)
+      const sl = currentPrice * 0.985;
+      
+      priceInput.value = currentPrice.toFixed(2);
+      targetInput.value = target.toFixed(2);
+      slInput.value = sl.toFixed(2);
+      
+      // Calculate margin after auto trade setup
+      calculateMargin();
+      
+      // Show notification
+      addNotification(`${currentSymbol}: Auto trade setup complete! Target: ₹${target.toFixed(2)}, SL: ₹${sl.toFixed(2)}`);
+    });
+    
+    // Notification system
+    const notificationTicker = document.getElementById('notificationTicker');
+    const notifications = [
+      { symbol: 'RELIANCE', change: '+1.25%', price: '₹2,510.75', isRising: true },
+      { symbol: 'TCS', change: '-0.75%', price: '₹3,295.50', isRising: false },
+      { symbol: 'INFY', change: '+2.10%', price: '₹1,452.30', isRising: true },
+      { symbol: 'HDFCBANK', change: '-1.15%', price: '₹1,680.25', isRising: false },
+      { symbol: 'SBIN', change: '+0.90%', price: '₹625.80', isRising: true },
+      { symbol: 'HINDUNILVR', change: '+3.20%', price: '₹2,450.00', isRising: true },
+      { symbol: 'BHARTIARTL', change: '-2.10%', price: '₹780.50', isRising: false }
+    ];
+    
+    function addNotification(message) {
+      const notification = document.createElement('div');
+      notification.className = 'notification-item';
+      notification.innerHTML = `
+        <span class="symbol">ALERT:</span>
+        <span>${message}</span>
+      `;
+      notificationTicker.appendChild(notification);
+    }
+    
+    function updateNotifications() {
+      notificationTicker.innerHTML = '';
+      
+      // Show most volatile stocks first
+      const volatileStocks = [...notifications]
+        .sort((a, b) => {
+          const aChange = parseFloat(a.change);
+          const bChange = parseFloat(b.change);
+          return Math.abs(bChange) - Math.abs(aChange);
+        });
+      
+      volatileStocks.forEach(stock => {
+        const notification = document.createElement('div');
+        notification.className = 'notification-item';
+        notification.innerHTML = `
+          <span class="symbol">${stock.symbol}</span>
+          <span class="price-change ${stock.isRising ? 'positive' : 'negative'}">${stock.change}</span>
+          <span>${stock.price}</span>
+        `;
+        notificationTicker.appendChild(notification);
+      });
+    }
+    
+    // Initialize with first symbol
+    document.addEventListener('DOMContentLoaded', function() {
+      initChart('RELIANCE');
+      updateNotifications();
+      
+      // Simulate price changes for demo purposes
+      setInterval(() => {
+        const randomStock = notifications[Math.floor(Math.random() * notifications.length)];
+        const change = (Math.random() * 2 - 1).toFixed(2);
+        randomStock.change = (parseFloat(change) > 0 ? '+' : '') + change + '%';
+        randomStock.isRising = parseFloat(change) > 0;
+        updateNotifications();
+      }, 5000);
+    });
+  </script>
+</body>
+</html>

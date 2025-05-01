@@ -42,7 +42,6 @@
             </div>
         </div>
     </section>
-
     <!-- Trade History Table -->
     <section class="py-12 px-6 md:px-20 bg-gray-50">
         <h2 class="text-2xl font-semibold text-center mb-10">Your Recent Trades</h2>
@@ -56,6 +55,7 @@
                         <th class="py-3 px-6 text-left">Price</th>
                         <th class="py-3 px-6 text-left">Timestamp</th>
                         <th class="py-3 px-6 text-left">Status</th>
+                        <th class="py-3 px-6 text-left">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,10 +69,19 @@
                             <td class="py-3 px-6">
                                 <span class="px-2 py-1 text-sm {% if trade.status == 'Completed' %}bg-green-100 text-green-600{% else %}bg-yellow-100 text-yellow-600{% endif %} rounded-full">{{ trade.status }}</span>
                             </td>
+                            <td class="py-3 px-6">
+                                {% if trade.action == 'BUY' %}
+                                    <span class="text-green-600 font-semibold">Buy</span>
+                                {% elif trade.action == 'SELL' %}
+                                    <span class="text-red-600 font-semibold">Sell</span>
+                                {% else %}
+                                    <span class="text-blue-600 font-semibold">AutoTrade</span>
+                                {% endif %}
+                            </td>
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="6" class="py-3 px-6 text-center text-gray-600">No trades yet.</td>
+                            <td colspan="7" class="py-3 px-6 text-center text-gray-600">No trades yet.</td>
                         </tr>
                     {% endfor %}
                 </tbody>
